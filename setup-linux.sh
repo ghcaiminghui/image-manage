@@ -4,6 +4,30 @@ echo "🔧 整改对比助手 - Linux 环境配置"
 echo "===================================="
 echo ""
 
+# 检查 Node.js 版本
+echo "🔍 检查 Node.js 版本..."
+node_version=$(node -v | cut -d'v' -f2 | cut -d'.' -f1)
+if [ "$node_version" -lt 18 ]; then
+    echo "❌ Node.js 版本过低: $(node -v)"
+    echo "需要 Node.js >= 18.x"
+    echo ""
+    echo "请升级 Node.js："
+    echo "  方法1: 使用 nvm"
+    echo "    curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.0/install.sh | bash"
+    echo "    source ~/.bashrc"
+    echo "    nvm install 18"
+    echo "    nvm use 18"
+    echo ""
+    echo "  方法2: 使用 NodeSource（Ubuntu/Debian）"
+    echo "    curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -"
+    echo "    sudo apt-get install -y nodejs"
+    exit 1
+else
+    echo "✅ Node.js 版本: $(node -v) (符合要求)"
+fi
+
+echo ""
+
 # 检测系统类型
 if [ -f /etc/os-release ]; then
     . /etc/os-release
