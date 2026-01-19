@@ -16,6 +16,24 @@ fi
 echo "📋 检测到系统: $PRETTY_NAME"
 echo ""
 
+# 检查 npm 是否使用了国内镜像
+echo "🔍 检查 npm 镜像配置..."
+current_registry=$(npm config get registry)
+if [[ $current_registry == *"npmmirror"* ]] || [[ $current_registry == *"taobao"* ]]; then
+    echo "✅ 已配置国内镜像: $current_registry"
+else
+    echo "⚠️  当前使用官方源: $current_registry"
+    echo "建议切换到淘宝镜像以提高下载速度"
+    read -p "是否切换到淘宝镜像？(y/n) " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        npm config set registry https://registry.npmmirror.com
+        echo "✅ 已切换到淘宝镜像"
+    fi
+fi
+
+echo ""
+
 # 检查是否有 sudo 权限
 if ! sudo -n true 2>/dev/null; then
     echo "⚠️  此脚本需要 sudo 权限来安装系统依赖"
@@ -93,8 +111,30 @@ echo ""
 echo "🧹 清理旧的 Node.js 依赖..."
 rm -rf node_modules package-lock.json
 
+# 确保 .npmrc 存在
+if [ ! -f .npmrc ]; then
+    echo "📝 创建 .npmrc 配置文件..."
+    cat > .npmrc << 'EOF'
+# Electron 镜像配置（使用淘宝镜像）
+electron_mirror=https://npmmirror.com/mirrors/electron/
+electron_builder_binaries_mirror=https://npmmirror.com/mirrors/electron-builder-binaries/
+
+# Electron 自定义目录配置
+electron_custom_dir={{ version }}
+
+# Node-gyp 配置
+node_gyp_mirror=https://npmmirror.com/mirrors/node/
+
+# Canvas 预构建二进制文件镜像
+canvas_binary_host_mirror=https://registry.npmmirror.com/-/binary/canvas
+EOF
+    echo "✅ .npmrc 配置文件创建完成"
+fi
+
 echo ""
 echo "📦 安装 Node.js 依赖..."
+echo "⏰ 首次安装可能需要 5-10 分钟（下载 Electron 等依赖）"
+echo ""
 npm install
 
 if [ $? -eq 0 ]; then
