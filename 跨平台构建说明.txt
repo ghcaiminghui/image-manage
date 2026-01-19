@@ -1,0 +1,125 @@
+【整改对比助手】跨平台构建指南
+========================================
+
+## 可用的构建命令
+
+### Windows 版本（x64）
+```bash
+npm run build:win
+```
+生成：整改对比助手 Setup.exe（64位 Windows 安装包）
+适用：Windows 7/8/10/11（64位）
+
+### macOS 版本
+
+#### 1. ARM64 版本（M1/M2/M3 芯片）
+```bash
+npm run build:mac-arm64
+```
+
+#### 2. x64 版本（Intel 芯片）
+```bash
+npm run build:mac-x64
+```
+
+#### 3. Universal 版本（同时支持 ARM 和 Intel）
+```bash
+npm run build:mac-universal
+```
+⚠️ 注意：Universal 版本体积会更大（约2倍）
+
+#### 4. 自动选择当前架构
+```bash
+npm run build:mac
+```
+
+### 一次性构建所有平台
+```bash
+npm run build:all
+```
+生成：Windows x64 + macOS Universal
+
+### Linux 版本
+```bash
+npm run build:linux
+```
+
+## 构建产物位置
+
+所有构建完成的文件会保存在 `dist` 目录：
+
+```
+dist/
+├── win-unpacked/              # Windows 未打包版本（测试用）
+├── 整改对比助手-1.0.0-setup.exe  # Windows 安装包
+├── mac/                       # macOS 应用
+├── mac-arm64/                 # macOS ARM64
+├── mac-x64/                   # macOS x64
+└── *.dmg                      # macOS 磁盘镜像
+```
+
+## 常见问题
+
+### Q1: 在 macOS 上构建 Windows 版本需要什么？
+A: 不需要额外工具！electron-builder 会自动下载需要的依赖。
+   第一次构建时会比较慢（下载 Wine 等工具），后续就快了。
+
+### Q2: 构建 Windows 版本时出现错误？
+A: 可能需要安装 Wine（用于在 macOS 上打包 Windows 应用）：
+```bash
+brew install --cask wine-stable
+```
+
+### Q3: macOS 版本打开时提示"已损坏"？
+A: 这是签名问题，参考《如何打开应用.txt》文档。
+   使用自动化脚本：
+```bash
+./build-and-fix.sh
+```
+
+### Q4: 想要只构建不签名？
+A: 已配置 hardenedRuntime: false，无需额外操作。
+
+### Q5: 构建速度太慢？
+A: 首次构建会下载依赖，后续会使用缓存。
+   可以只构建当前平台：
+   - 苹果芯片 Mac：npm run build:mac-arm64
+   - Windows：npm run build:win
+
+## 推荐的构建流程
+
+### 本地测试（快速）
+```bash
+npm run dev  # 开发模式，即时预览
+```
+
+### 分发给同事（同平台）
+```bash
+# 在 macOS 上
+npm run build:mac-arm64   # 或 build:mac-x64
+
+# 在 Windows 上
+npm run build:win
+```
+
+### 分发给所有人（跨平台）
+```bash
+npm run build:all   # 构建 Windows + macOS
+```
+
+## 文件大小参考
+
+- Windows x64 安装包：约 80-120 MB
+- macOS ARM64 应用：约 90-130 MB
+- macOS Universal 应用：约 160-240 MB
+- macOS DMG 镜像：压缩后会更小
+
+## 技术说明
+
+- electron-builder 支持跨平台构建
+- 在 macOS 上可以构建 Windows 和 Linux 版本
+- 在 Windows 上只能构建 Windows 版本（不能构建 macOS）
+- 构建的 Windows 版本是 x64（64位），兼容性更好
+
+开发者：Solar
+版本：1.0.0
